@@ -18,22 +18,10 @@ Install Bootstrap
 npm install bootstrap@5.2.3
 ```
 
-Library Components
-
-```bash
-npm install styled-components
-```
-
 React Icon
 
 ```bash
 npm install react-icons@4.7.1
-```
-
-Immer
-
-```bash
-npm install immer@9.0.19
 ```
 
 React Hook Form
