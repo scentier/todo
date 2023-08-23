@@ -22,24 +22,31 @@ const App = () => {
   } = useForm<TTodoSchema>({ resolver: zodResolver(TodoSchema) });
 
   // https://stackoverflow.com/a/71550656
-  // set the state to array, but it doesn't know what inside that array, so it treat the sate as never[]
+  // set the state to array, but it doesn't now what inside that array, so it treat the sate as never[]
   const [todos, setTodos] = useState<TTodoSchema[]>([]);
 
-  const checkedDo = (index: number) => {
-    const newTodos = [...todos];
-    newTodos[index].status = !todos[index].status;
-    setTodos(newTodos);
+  // add new todo/task
+  const addTodo = (data: TTodoSchema) => {
+    setTodos([...todos, { task: data.task, status: data.status }]);
+    reset();
+  };
+
+  // 2 ways to update todo and mark it as done
+  // updateTodo() and checkedTodo()
+  const updateTodo = (todo: TTodoSchema) => {
+    const upStatus = { ...todo, status: (todo.status = !todo.status) };
+    setTodos(todos.map((td) => (td.task === todo.task ? upStatus : td)));
+  };
+
+  const checkedTodo = (index: number) => {
+    const upTodos = [...todos];
+    upTodos[index].status = !todos[index].status;
+    setTodos(upTodos);
   };
 
   return (
     <>
-      <form
-        onSubmit={handleSubmit((data) => {
-          setTodos([...todos, { status: data.status, task: data.task }]);
-          console.log(data);
-          reset();
-        })}
-      >
+      <form onSubmit={handleSubmit(addTodo)}>
         <div className="input-group mt-3 ps-2 pe-2">
           <input {...register("task")} type="text" className="form-control" />
           <button
@@ -58,7 +65,7 @@ const App = () => {
         {todos.map((todo, index) => (
           <div className="form-check py-2 px-4" key={index}>
             <input
-              onClick={() => checkedDo(index)}
+              onClick={() => updateTodo(todo)}
               className="form-check-input p-2"
               type="checkbox"
             />
