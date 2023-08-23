@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 
 const TodoSchema = z.object({
+  id: z.number().default(0),
   task: z
     .string()
     .min(3, { message: "What you do must be at least 3 characters." })
@@ -27,27 +28,48 @@ const App = () => {
 
   // add new todo/task
   const addTodo = (data: TTodoSchema) => {
-    setTodos([...todos, { task: data.task, status: data.status }]);
+    setTodos([
+      ...todos,
+      {
+        id: todos.length < 1 ? 1 : todos.length + 1,
+        task: data.task,
+        status: data.status,
+      },
+    ]);
     reset();
   };
 
   // 2 ways to update todo and mark it as done
-  // updateTodo() and checkedTodo()
+  // 1. use updateTodo()
   const updateTodo = (todo: TTodoSchema) => {
     const upStatus = { ...todo, status: (todo.status = !todo.status) };
-    setTodos(todos.map((td) => (td.task === todo.task ? upStatus : td)));
+    setTodos(todos.map((td) => (td.id === todo.id ? upStatus : td)));
   };
 
+  // 2. use index from todos.map(todo, index)
   const checkedTodo = (index: number) => {
-    const upTodos = [...todos];
-    upTodos[index].status = !todos[index].status;
-    setTodos(upTodos);
+    const newTodos = [...todos];
+    newTodos[index].status = !todos[index].status;
+    setTodos(newTodos);
+  };
+
+  // 2 way to delete methods
+  // 1. use filter
+  const deleteTodo = (todo: TTodoSchema) => {
+    setTodos(todos.filter((t) => t.id !== todo.id));
+  };
+
+  // 2. use splice
+  const removeTodo = (index: number) => {
+    const newTodos = [...todos];
+    newTodos.splice(index, 1);
+    setTodos(newTodos);
   };
 
   return (
-    <>
+    <div className="container-sm">
       <form onSubmit={handleSubmit(addTodo)}>
-        <div className="input-group mt-3 ps-2 pe-2">
+        <div className="input-group my-5 ps-2 pe-2">
           <input {...register("task")} type="text" className="form-control" />
           <button
             className="btn btn-outline-secondary"
@@ -61,27 +83,39 @@ const App = () => {
           <p className="text-danger mb-3 p-3">{errors.task.message}</p>
         )}
       </form>
-      <div className="container-fluid mt-2">
-        {todos.map((todo, index) => (
-          <div className="form-check py-2 px-4" key={index}>
-            <input
-              onClick={() => updateTodo(todo)}
-              className="form-check-input p-2"
-              type="checkbox"
-            />
-            <label className="form-check-label">
-              {!todo.status ? (
-                <span className="text-decoration-line-through">
-                  {todo.task}
-                </span>
-              ) : (
-                todo.task
-              )}
-            </label>
-          </div>
+      <ul className="list-group mt-2 mx-2">
+        {todos.map((todo) => (
+          <li
+            className="list-group-item form-check py-2 px-4 d-flex justify-content-between"
+            key={todo.id}
+          >
+            <p className="mt-3 ms-3">
+              <input
+                onClick={() => updateTodo(todo)}
+                className="form-check-input p-2"
+                type="checkbox"
+              />
+              <label className="form-check-label ms-2">
+                {!todo.status ? (
+                  <span className="text-decoration-line-through">
+                    {todo.task}
+                  </span>
+                ) : (
+                  todo.task
+                )}
+              </label>
+            </p>
+            <button
+              onClick={() => deleteTodo(todo)}
+              type="button"
+              className="btn btn-outline-danger"
+            >
+              Delete
+            </button>
+          </li>
         ))}
-      </div>
-    </>
+      </ul>
+    </div>
   );
 };
 
